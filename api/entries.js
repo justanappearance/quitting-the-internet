@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   )
 
   if (!resp.ok) {
-    return res.status(500).json({ error: 'Database error' })
+    return res.status(500).json({ error: 'Database error', debug: await resp.text(), status: resp.status, urlSet: !!process.env.SUPABASE_URL, keySet: !!process.env.SUPABASE_SERVICE_ROLE_KEY })
   }
 
   res.status(200).json(await resp.json())
