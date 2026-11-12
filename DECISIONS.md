@@ -23,3 +23,14 @@
 - Decision: `START_DATE` in `app.js` (both calendar start and streak-counting start) is 2026-06-30.
 - Why: That's the day the user restarted this attempt at quitting the internet.
 - Date: 2026-07-04
+
+## The public page moved to stop-gooning's Internet tab
+- Decision: `/` redirects to https://stop-gooning.vercel.app/#internet. `/admin` and `/api/*` still
+  work here, and `internet_entries` is still the data; the combined site reads the same table.
+- Why: Mike, 2026-11-12, wanted gooning, internet, lifting and weight in one site with tabs.
+- The Notion sync for this table (days from 2026-10-20 on follow the Energy Tracker's "No Internet"
+  tag) lives in stop-gooning's `api/sync-internet.js`, because that Vercel project already has the
+  Notion token. A first version here was reverted unused: this project never got the token.
+- Rejected: keeping two separate pages.
+- Why rejected: Mike sees them as one record of his behavior and energy.
+- Date: 2026-11-12
