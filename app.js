@@ -1,9 +1,7 @@
 const MONTH_NAMES = ['January','February','March','April','May','June',
   'July','August','September','October','November','December']
 const DAY_HEADERS = ['Su','Mo','Tu','We','Th','Fr','Sa']
-const START_DATE = new Date(2026, 5, 30) // June 30, 2026 - calendar and main stats begin here
-// Second start (Mike, 2026-11-12): marked on the calendar, with its own counts under the main stats.
-const RESTART_DATE = new Date(2026, 9, 20) // October 20, 2026
+const START_DATE = new Date(2026, 5, 30) // June 30, 2026
 
 
 function formatDate(d) {
@@ -13,12 +11,12 @@ function formatDate(d) {
   return `${y}-${m}-${day}`
 }
 
-function calcCurrentStreak(entryMap, today, from) {
+function calcCurrentStreak(entryMap, today) {
   const d = new Date(today)
   d.setDate(d.getDate() - 1) // start from yesterday since today is pending
   let streak = 0
   for (let i = 0; i < 366; i++) {
-    if (d < from) break
+    if (d < START_DATE) break
     const entry = entryMap[formatDate(d)]
     if (entry && entry.relapsed) break
     streak++
@@ -27,8 +25,8 @@ function calcCurrentStreak(entryMap, today, from) {
   return streak
 }
 
-function calcLongestStreak(entryMap, today, from) {
-  const d = new Date(from)
+function calcLongestStreak(entryMap, today) {
+  const d = new Date(START_DATE)
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
   let longest = 0
@@ -101,7 +99,7 @@ function renderMonth(year, month, todayStr, entryMap, today) {
     }
 
     if (isToday) cell.classList.add('today')
-    if (dateStr === formatDate(START_DATE) || dateStr === formatDate(RESTART_DATE)) cell.classList.add('start')
+    if (dateStr === formatDate(START_DATE)) cell.classList.add('start')
 
     const num = document.createElement('span')
     num.className = 'day-number'
@@ -113,12 +111,6 @@ function renderMonth(year, month, todayStr, entryMap, today) {
 
   monthEl.appendChild(gridEl)
   return monthEl
-}
-
-function countDays(entryMap, today, todayStr, from) {
-  const pastDays = Math.floor((today - from) / 864e5) // excludes today (still pending)
-  const relapsed = Object.values(entryMap).filter(e => e.relapsed && e.date !== todayStr && e.date >= formatDate(from)).length
-  return { relapsed, clean: pastDays - relapsed }
 }
 
 async function init() {
@@ -140,15 +132,12 @@ async function init() {
   const entryMap = {}
   for (const e of entries) entryMap[e.date] = e
 
-  const allTime = countDays(entryMap, today, todayStr, START_DATE)
-  document.getElementById('total-relapsed').textContent = allTime.relapsed
-  document.getElementById('total-clean').textContent = allTime.clean
-  document.getElementById('current-streak').textContent = calcCurrentStreak(entryMap, today, START_DATE)
-  document.getElementById('longest-streak').textContent = calcLongestStreak(entryMap, today, START_DATE)
-  const recent = countDays(entryMap, today, todayStr, RESTART_DATE)
-  const dayNumber = Math.floor((today - RESTART_DATE) / 864e5) + 1
-  document.getElementById('restart-note').textContent =
-    `since ${MONTH_NAMES[RESTART_DATE.getMonth()]} ${RESTART_DATE.getDate()} (day ${dayNumber}): ${recent.clean} no internet · ${recent.relapsed} relapsed`
+  const pastDays = Math.floor((today - START_DATE) / 864e5) // excludes today (still pending)
+  const relapsedCount = Object.values(entryMap).filter(e => e.relapsed && e.date !== todayStr && e.date >= formatDate(START_DATE)).length
+  document.getElementById('total-relapsed').textContent = relapsedCount
+  document.getElementById('total-clean').textContent = pastDays - relapsedCount
+  document.getElementById('current-streak').textContent = calcCurrentStreak(entryMap, today)
+  document.getElementById('longest-streak').textContent = calcLongestStreak(entryMap, today)
 
   calendar.innerHTML = ''
 
